@@ -14,6 +14,14 @@ export class User {
   @IsEmail()
   email: string;
 
+  @Column({ unique: true })
+  @IsNotEmpty()
+  username: string;
+
+  @Column()
+  @IsNotEmpty()
+  password: string;
+
   @Column()
   @IsNotEmpty()
   role: 'blogger' | 'admin' | 'super-admin';
