@@ -8,7 +8,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    const jwt = await this.authService.validateUser(loginDto);
-    return { token: jwt };
+    const { token, role } = await this.authService.validateUser(loginDto);
+    return { token, role };
   }
 }

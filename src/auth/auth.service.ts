@@ -10,14 +10,17 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(loginDto: LoginDto): Promise<string> {
+  async validateUser(
+    loginDto: LoginDto,
+  ): Promise<{ token: string; role: string }> {
     const { identifier, password } = loginDto;
 
     // Rechercher l'utilisateur par username ou email
     const user = await this.usersService.findByUsernameOrEmail(identifier);
     if (user && (await user.validatePassword(password))) {
       const payload = { username: user.username, sub: user.id };
-      return this.jwtService.sign(payload);
+      const token = this.jwtService.sign(payload);
+      return { token, role: user.role };
     } else {
       throw new UnauthorizedException('Invalid credentials');
     }
