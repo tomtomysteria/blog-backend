@@ -1,9 +1,13 @@
-import { IsNotEmpty, IsString, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsIn } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  firstname: string;
+
+  @IsNotEmpty()
+  @IsString()
+  lastname: string;
 
   @IsNotEmpty()
   @IsEmail()
@@ -11,9 +15,13 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsString()
-  password: string;
+  username: string;
 
   @IsNotEmpty()
   @IsString()
+  password: string;
+
+  @IsNotEmpty()
+  @IsIn(['blogger', 'admin', 'super-admin'])
   role: 'blogger' | 'admin' | 'super-admin';
 }
