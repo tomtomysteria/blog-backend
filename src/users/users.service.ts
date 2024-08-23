@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { LoginDto } from 'src/auth/dto/login.dto';
 
 @Injectable()
 export class UsersService {
@@ -13,25 +12,10 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  // Remplacez cette implémentation par celle qui correspond à votre logique de base de données
-  async findByCredentials(loginDto: LoginDto): Promise<User | null> {
-    const { username, password } = loginDto;
-
-    // Ici vous devriez implémenter la logique pour vérifier l'utilisateur dans la base de données
-    const user = await this.findUserByUsername(username);
-
-    // Supposons que vous avez une méthode pour vérifier le mot de passe
-    if (user && user.password === password) {
-      // Utiliser un hash de mot de passe sécurisé en production
-      return user;
-    }
-
-    return null;
-  }
-
-  private async findUserByUsername(username: string): Promise<User | null> {
-    // Utilisation de username pour trouver l'utilisateur
-    return this.userRepository.findOne({ where: { username } });
+  async findByUsernameOrEmail(identifier: string): Promise<User | undefined> {
+    return this.userRepository.findOne({
+      where: [{ username: identifier }, { email: identifier }],
+    });
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {

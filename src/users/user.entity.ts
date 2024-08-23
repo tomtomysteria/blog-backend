@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm';
 import { IsEmail, IsNotEmpty } from 'class-validator';
+import * as bcrypt from 'bcrypt';
 
 @Entity()
 export class User {
@@ -10,11 +11,11 @@ export class User {
   @IsNotEmpty()
   name: string;
 
-  @Column()
+  @Column({ unique: true }) // Email unique
   @IsEmail()
   email: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true }) // Username unique
   @IsNotEmpty()
   username: string;
 
@@ -25,4 +26,13 @@ export class User {
   @Column()
   @IsNotEmpty()
   role: 'blogger' | 'admin' | 'super-admin';
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+
+  async validatePassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password);
+  }
 }

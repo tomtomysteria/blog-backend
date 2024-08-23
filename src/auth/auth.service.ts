@@ -11,11 +11,15 @@ export class AuthService {
   ) {}
 
   async validateUser(loginDto: LoginDto): Promise<string> {
-    const user = await this.usersService.findByCredentials(loginDto);
-    if (!user) {
+    const { identifier, password } = loginDto;
+
+    // Rechercher l'utilisateur par username ou email
+    const user = await this.usersService.findByUsernameOrEmail(identifier);
+    if (user && (await user.validatePassword(password))) {
+      const payload = { username: user.username, sub: user.id };
+      return this.jwtService.sign(payload);
+    } else {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const payload = { username: user.username, sub: user.id };
-    return this.jwtService.sign(payload);
   }
 }

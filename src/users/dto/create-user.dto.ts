@@ -11,5 +11,9 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsString()
+  password: string;
+
+  @IsNotEmpty()
+  @IsString()
   role: 'blogger' | 'admin' | 'super-admin';
 }
