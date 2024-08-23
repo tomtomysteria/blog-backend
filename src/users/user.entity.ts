@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm';
-import { IsEmail, IsNotEmpty } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 
 @Entity()
@@ -8,23 +7,21 @@ export class User {
   id: string;
 
   @Column()
-  @IsNotEmpty()
-  name: string;
+  firstname: string;
+
+  @Column()
+  lastname: string;
 
   @Column({ unique: true }) // Email unique
-  @IsEmail()
   email: string;
 
   @Column({ unique: true }) // Username unique
-  @IsNotEmpty()
   username: string;
 
   @Column()
-  @IsNotEmpty()
   password: string;
 
   @Column()
-  @IsNotEmpty()
   role: 'blogger' | 'admin' | 'super-admin';
 
   @BeforeInsert()
