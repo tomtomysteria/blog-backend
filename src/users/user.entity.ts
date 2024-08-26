@@ -12,6 +12,9 @@ export class User {
   @Column()
   lastname: string;
 
+  @Column({ nullable: true, type: 'date' }) // Date de naissance, facultative
+  birthdate?: Date;
+
   @Column({ unique: true }) // Email unique
   email: string;
 
