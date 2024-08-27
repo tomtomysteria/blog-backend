@@ -1,24 +1,30 @@
 import {
-  Body,
   Controller,
   Get,
-  Param,
   Post,
-  Patch,
+  Body,
+  Param,
+  Put,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
-import { Article } from './article.entity';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request } from 'express';
+import { User } from '../users/user.entity';
 
 @Controller('articles')
+@UseGuards(JwtAuthGuard)
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Post()
-  create(@Body() createArticleDto: CreateArticleDto): Promise<Article> {
-    return this.articlesService.create(createArticleDto);
+  create(@Body() createArticleDto: CreateArticleDto, @Req() req: Request) {
+    const user = req.user as User;
+    return this.articlesService.create(createArticleDto, user);
   }
 
   @Get()
@@ -31,16 +37,18 @@ export class ArticlesController {
     return this.articlesService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto,
-  ): Promise<Article> {
-    return this.articlesService.update(id, updateArticleDto);
+    @Req() req: Request,
+  ) {
+    const user = req.user as User;
+    return this.articlesService.update(id, updateArticleDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id') id: string) {
     return this.articlesService.remove(id);
   }
 }

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Category } from './category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class CategoriesService {
@@ -12,8 +13,14 @@ export class CategoriesService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const category = this.categoryRepository.create(createCategoryDto);
+  async create(
+    createCategoryDto: CreateCategoryDto,
+    user: User,
+  ): Promise<Category> {
+    const category = this.categoryRepository.create({
+      ...createCategoryDto,
+      createdBy: user.username,
+    });
     return this.categoryRepository.save(category);
   }
 
@@ -32,9 +39,11 @@ export class CategoriesService {
   async update(
     id: string,
     updateCategoryDto: UpdateCategoryDto,
+    user: User,
   ): Promise<Category> {
     const category = await this.findOne(id);
     Object.assign(category, updateCategoryDto);
+    category.updatedBy = user.username;
     return this.categoryRepository.save(category);
   }
 

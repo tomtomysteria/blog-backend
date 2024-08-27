@@ -21,7 +21,10 @@ export class ArticlesService {
   ) {}
 
   // Create a new article with validation of author and category
-  async create(createArticleDto: CreateArticleDto): Promise<Article> {
+  async create(
+    createArticleDto: CreateArticleDto,
+    user: User,
+  ): Promise<Article> {
     const { title, content, authorId, categoryId } = createArticleDto;
 
     const author = await this.usersRepository.findOne({
@@ -44,6 +47,7 @@ export class ArticlesService {
       content,
       author,
       category,
+      createdBy: user.username,
     });
 
     return this.articlesRepository.save(article);
@@ -76,10 +80,11 @@ export class ArticlesService {
     return { articles, total };
   }
 
-  // Update an existing article
+  // Update an article
   async update(
     id: string,
     updateArticleDto: UpdateArticleDto,
+    user: User,
   ): Promise<Article> {
     const article = await this.findOne(id);
 
@@ -104,6 +109,7 @@ export class ArticlesService {
     }
 
     Object.assign(article, updateArticleDto);
+    article.updatedBy = user.username;
     return this.articlesRepository.save(article);
   }
 
