@@ -17,11 +17,11 @@ import { Request } from 'express';
 import { User } from './user.entity';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
     const user = req.user as User;
     return this.usersService.create(createUserDto, user);
@@ -38,6 +38,7 @@ export class UsersController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -48,6 +49,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
