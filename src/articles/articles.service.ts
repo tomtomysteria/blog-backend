@@ -53,9 +53,12 @@ export class ArticlesService {
     return this.articlesRepository.save(article);
   }
 
-  // Fetch all articles with author and category relations
+  // Fetch all articles with author and category relations, excluding soft-deleted ones
   async findAll(): Promise<Article[]> {
-    return this.articlesRepository.find({ relations: ['author', 'category'] });
+    return this.articlesRepository.find({
+      where: { deletedAt: null },
+      relations: ['author', 'category'],
+    });
   }
 
   // Fetch a single article by ID with relations
@@ -72,6 +75,7 @@ export class ArticlesService {
     limit: number,
   ): Promise<{ articles: Article[]; total: number }> {
     const [articles, total] = await this.articlesRepository.findAndCount({
+      where: { deletedAt: null },
       relations: ['author', 'category'],
       skip: (page - 1) * limit,
       take: limit,
@@ -86,11 +90,17 @@ export class ArticlesService {
     updateArticleDto: UpdateArticleDto,
     user: User,
   ): Promise<Article> {
+    const { authorId, categoryId, ...updateFields } = updateArticleDto;
+
     const article = await this.findOne(id);
 
-    if (updateArticleDto.authorId) {
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+
+    if (authorId && authorId !== article.author.id) {
       const author = await this.usersRepository.findOne({
-        where: { id: updateArticleDto.authorId },
+        where: { id: authorId },
       });
       if (!author) {
         throw new NotFoundException('Author not found');
@@ -98,9 +108,9 @@ export class ArticlesService {
       article.author = author;
     }
 
-    if (updateArticleDto.categoryId) {
+    if (categoryId && categoryId !== article.category.id) {
       const category = await this.categoriesRepository.findOne({
-        where: { id: updateArticleDto.categoryId },
+        where: { id: categoryId },
       });
       if (!category) {
         throw new NotFoundException('Category not found');
@@ -108,14 +118,18 @@ export class ArticlesService {
       article.category = category;
     }
 
-    Object.assign(article, updateArticleDto);
+    Object.assign(article, updateFields);
     article.updatedBy = user.username;
+
     return this.articlesRepository.save(article);
   }
 
-  // Remove an article by ID
+  // Soft delete an article by ID
   async remove(id: string): Promise<void> {
-    const article = await this.findOne(id);
-    await this.articlesRepository.remove(article);
+    const article = await this.articlesRepository.findOne({ where: { id } });
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+    await this.articlesRepository.softRemove(article);
   }
 }

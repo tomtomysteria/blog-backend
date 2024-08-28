@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToOne, DeleteDateColumn } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Category } from '../categories/category.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
@@ -16,4 +16,7 @@ export class Article extends BaseEntity {
 
   @ManyToOne(() => Category, (category) => category.id)
   category: Category;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  deletedAt?: Date;
 }
