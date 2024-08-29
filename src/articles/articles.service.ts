@@ -125,7 +125,7 @@ export class ArticlesService {
   }
 
   // Soft delete an article by ID
-  async remove(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     const article = await this.articlesRepository.findOne({ where: { id } });
     if (!article) {
       throw new NotFoundException('Article not found');

@@ -50,7 +50,7 @@ export class CategoriesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(id);
+  delete(@Param('id') id: string) {
+    return this.categoriesService.delete(id);
   }
 }

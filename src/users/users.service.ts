@@ -49,7 +49,7 @@ export class UsersService {
     return this.userRepository.save(existingUser);
   }
 
-  async remove(id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     const user = await this.findOne(id);
     await this.userRepository.remove(user);
   }
