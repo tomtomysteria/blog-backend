@@ -8,7 +8,11 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    const { token, role } = await this.authService.validateUser(loginDto);
-    return { token, role };
+    return this.authService.validateUser(loginDto);
+  }
+
+  @Post('refresh-token')
+  async refreshToken(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
   }
 }

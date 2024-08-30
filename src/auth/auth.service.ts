@@ -12,17 +12,36 @@ export class AuthService {
 
   async validateUser(
     loginDto: LoginDto,
-  ): Promise<{ token: string; role: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string; role: string }> {
     const { identifier, password } = loginDto;
 
     // Rechercher l'utilisateur par username ou email
     const user = await this.usersService.findByUsernameOrEmail(identifier);
     if (user && (await user.validatePassword(password))) {
-      const payload = { username: user.username, sub: user.id };
-      const token = this.jwtService.sign(payload);
-      return { token, role: user.role };
+      const { accessToken, refreshToken } = this.generateTokens(user.id);
+      return { accessToken, refreshToken, role: user.role };
     } else {
       throw new UnauthorizedException('Invalid credentials');
+    }
+  }
+
+  generateTokens(userId: string) {
+    const payload = { sub: userId };
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+    return { accessToken, refreshToken };
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify(refreshToken);
+      const user = await this.usersService.findOne(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException();
+      }
+      return this.generateTokens(user.id);
+    } catch (e) {
+      throw new UnauthorizedException();
     }
   }
 }
