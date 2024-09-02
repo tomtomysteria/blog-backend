@@ -17,7 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Request } from 'express';
-import { User } from '../users/user.entity';
+import { User, UserRole } from '../users/user.entity';
 
 @Controller('articles')
 export class ArticlesController {
@@ -25,7 +25,7 @@ export class ArticlesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super-admin', 'admin', 'blogger')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.BLOGGER)
   create(@Body() createArticleDto: CreateArticleDto, @Req() req: Request) {
     const user = req.user as User;
     return this.articlesService.create(createArticleDto, user);
@@ -43,7 +43,7 @@ export class ArticlesController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super-admin', 'admin', 'blogger')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.BLOGGER)
   async update(
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto,
@@ -53,7 +53,7 @@ export class ArticlesController {
     const article = await this.articlesService.findOne(id);
 
     // Si l'utilisateur est un "blogger", il ne peut modifier que ses propres articles
-    if (user.role === 'blogger' && article.author.id !== user.id) {
+    if (user.role === UserRole.BLOGGER && article.author.id !== user.id) {
       throw new ForbiddenException('You can only update your own articles.');
     }
 
@@ -62,13 +62,13 @@ export class ArticlesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super-admin', 'admin', 'blogger')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.BLOGGER)
   async delete(@Param('id') id: string, @Req() req: Request) {
     const user = req.user as User;
     const article = await this.articlesService.findOne(id);
 
     // Si l'utilisateur est un "blogger", il ne peut supprimer que ses propres articles
-    if (user.role === 'blogger' && article.author.id !== user.id) {
+    if (user.role === UserRole.BLOGGER && article.author.id !== user.id) {
       throw new ForbiddenException('You can only delete your own articles.');
     }
 
