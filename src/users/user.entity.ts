@@ -2,8 +2,21 @@ import { Entity, Column, BeforeInsert } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { BaseEntity } from 'src/common/entities/base.entity';
 
+export enum UserRole {
+  SUPER_ADMIN = 'super-admin',
+  ADMIN = 'admin',
+  BLOGGER = 'blogger',
+}
+
 @Entity()
 export class User extends BaseEntity {
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.BLOGGER,
+  })
+  role: UserRole;
+
   @Column()
   firstname: string;
 
@@ -21,9 +34,6 @@ export class User extends BaseEntity {
 
   @Column()
   password: string;
-
-  @Column({ default: 'blogger' })
-  role: 'blogger' | 'admin' | 'super-admin';
 
   @BeforeInsert()
   async hashPassword() {
