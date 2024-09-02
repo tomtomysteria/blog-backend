@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -16,7 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Request } from 'express';
-import { User } from '../users/user.entity';
+import { User, UserRole } from '../users/user.entity';
 
 @Controller('categories')
 export class CategoriesController {
@@ -24,7 +25,7 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super-admin', 'admin')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   create(@Body() createCategoryDto: CreateCategoryDto, @Req() req: Request) {
     const user = req.user as User;
     return this.categoriesService.create(createCategoryDto, user);
@@ -42,7 +43,7 @@ export class CategoriesController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super-admin', 'admin')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -54,7 +55,7 @@ export class CategoriesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('super-admin', 'admin')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   delete(@Param('id') id: string) {
     return this.categoriesService.delete(id);
   }

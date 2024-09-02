@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -32,7 +33,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   findAll() {
     return this.usersService.findAll();
   }
@@ -45,13 +46,22 @@ export class UsersController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.BLOGGER)
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: Request,
   ) {
     const user = req.user as User;
+
+    // Si l'utilisateur est un "admin" ou "blogger", il ne peut modifier que son propre compte
+    if (
+      (user.role === UserRole.ADMIN || user.role === UserRole.BLOGGER) &&
+      user.id !== id
+    ) {
+      throw new ForbiddenException('You can only update your own account.');
+    }
+
     return this.usersService.update(id, updateUserDto, user);
   }
 

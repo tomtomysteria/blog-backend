@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -43,19 +44,34 @@ export class ArticlesController {
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super-admin', 'admin', 'blogger')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto,
     @Req() req: Request,
   ) {
     const user = req.user as User;
+    const article = await this.articlesService.findOne(id);
+
+    // Si l'utilisateur est un "blogger", il ne peut modifier que ses propres articles
+    if (user.role === 'blogger' && article.author.id !== user.id) {
+      throw new ForbiddenException('You can only update your own articles.');
+    }
+
     return this.articlesService.update(id, updateArticleDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super-admin', 'admin', 'blogger')
-  delete(@Param('id') id: string) {
+  async delete(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as User;
+    const article = await this.articlesService.findOne(id);
+
+    // Si l'utilisateur est un "blogger", il ne peut supprimer que ses propres articles
+    if (user.role === 'blogger' && article.author.id !== user.id) {
+      throw new ForbiddenException('You can only delete your own articles.');
+    }
+
     return this.articlesService.delete(id);
   }
 }
