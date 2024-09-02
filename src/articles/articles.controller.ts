@@ -13,6 +13,8 @@ import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { Request } from 'express';
 import { User } from '../users/user.entity';
 
@@ -21,7 +23,8 @@ export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super-admin', 'admin', 'blogger')
   create(@Body() createArticleDto: CreateArticleDto, @Req() req: Request) {
     const user = req.user as User;
     return this.articlesService.create(createArticleDto, user);
@@ -38,7 +41,8 @@ export class ArticlesController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super-admin', 'admin', 'blogger')
   update(
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto,
@@ -49,7 +53,8 @@ export class ArticlesController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super-admin', 'admin', 'blogger')
   delete(@Param('id') id: string) {
     return this.articlesService.delete(id);
   }
