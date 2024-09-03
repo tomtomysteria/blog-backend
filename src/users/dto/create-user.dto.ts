@@ -2,10 +2,11 @@ import {
   IsNotEmpty,
   IsString,
   IsEmail,
-  IsIn,
   IsOptional,
   IsDateString,
+  IsEnum,
 } from 'class-validator';
+import { UserRole } from '../user.entity';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -33,6 +34,6 @@ export class CreateUserDto {
   password: string;
 
   @IsNotEmpty()
-  @IsIn(['blogger', 'admin', 'super-admin'])
-  role: 'blogger' | 'admin' | 'super-admin';
+  @IsEnum(UserRole)
+  role: UserRole;
 }
