@@ -14,7 +14,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   constructor(@Inject(JwtService) private readonly jwtService: JwtService) {
     super();
-    // this.logger.log(`JwtService is injected: ${!!this.jwtService}`);
   }
 
   canActivate(context: ExecutionContext) {
@@ -32,7 +31,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       request.user = user; // Attach the user to the request object
       return super.canActivate(context);
     } catch (error) {
-      this.logger.error(`Token verification failed: ${error.message}`);
+      if (error.name === 'TokenExpiredError') {
+        // Log a warning if the token has expired
+        this.logger.warn('Token expired for user');
+      } else {
+        // Log an error for other issues
+        this.logger.error(`Token verification failed: ${error.message}`);
+      }
       throw new UnauthorizedException('Could not authenticate token');
     }
   }
