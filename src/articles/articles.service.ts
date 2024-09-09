@@ -6,6 +6,7 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { User } from 'src/users/user.entity';
 import { Category } from 'src/categories/category.entity';
+import { sanitizeContent } from 'src/utils/sanitize-content.util';
 
 @Injectable()
 export class ArticlesService {
@@ -42,9 +43,12 @@ export class ArticlesService {
       throw new NotFoundException('Category not found');
     }
 
+    // Utiliser l'utilitaire pour nettoyer le contenu
+    const sanitizedContent = sanitizeContent(content);
+
     const article = this.articlesRepository.create({
       title,
-      content,
+      content: sanitizedContent, // Utiliser le contenu nettoyé
       author,
       category,
       createdBy: user.username,
@@ -90,7 +94,7 @@ export class ArticlesService {
     updateArticleDto: UpdateArticleDto,
     user: User,
   ): Promise<Article> {
-    const { authorId, categoryId, ...updateFields } = updateArticleDto;
+    const { authorId, categoryId, content, ...updateFields } = updateArticleDto;
 
     const article = await this.findOne(id);
 
@@ -116,6 +120,11 @@ export class ArticlesService {
         throw new NotFoundException('Category not found');
       }
       article.category = category;
+    }
+
+    // Utiliser l'utilitaire pour nettoyer le contenu
+    if (content) {
+      article.content = sanitizeContent(content);
     }
 
     Object.assign(article, updateFields);
