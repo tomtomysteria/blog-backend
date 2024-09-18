@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 
@@ -36,12 +36,20 @@ export class AuthService {
     try {
       const payload = this.jwtService.verify(refreshToken);
       const user = await this.usersService.findOne(payload.sub);
+
       if (!user) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('User not found');
       }
+
       return this.generateTokens(user.id);
-    } catch (e) {
-      throw new UnauthorizedException();
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Refresh token expired');
+      } else if (error instanceof JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid refresh token');
+      } else {
+        throw new UnauthorizedException('Could not refresh token');
+      }
     }
   }
 }

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
+import { TokenExpiredError } from 'jsonwebtoken';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -25,20 +26,22 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new UnauthorizedException('Invalid authorization header format');
     }
 
+    const token = authHeader.split(' ')[1];
+
     try {
-      const token = authHeader.split(' ')[1];
+      // Vérifier le token d'accès avec JwtService
       const user = this.jwtService.verify(token);
-      request.user = user; // Attach the user to the request object
-      return super.canActivate(context);
+      request.user = user; // Assigner l'utilisateur à la requête
+      return super.canActivate(context); // Autoriser la requête
     } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        // Log a warning if the token has expired
+      // Gestion des erreurs spécifiques liées au token
+      if (error instanceof TokenExpiredError) {
         this.logger.warn('Token expired for user');
+        throw new UnauthorizedException('Token expired');
       } else {
-        // Log an error for other issues
         this.logger.error(`Token verification failed: ${error.message}`);
+        throw new UnauthorizedException('Invalid token');
       }
-      throw new UnauthorizedException('Could not authenticate token');
     }
   }
 }
