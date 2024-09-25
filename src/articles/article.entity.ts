@@ -11,10 +11,14 @@ export class Article extends BaseEntity {
   @Column()
   content: string;
 
-  @ManyToOne(() => User, (user) => user.id)
+  // À la suppression du user associé aux articles, suppression en cascade des articles
+  @ManyToOne(() => User, (user) => user.id, { onDelete: 'CASCADE' })
   author: User;
 
-  @ManyToOne(() => Category, (category) => category.id)
+  // À la suppression de la catégorie associée aux articles, set à NULL les valeurs de la clé étrangère categoryId des articles
+  @ManyToOne(() => Category, (category) => category.id, {
+    onDelete: 'SET NULL',
+  })
   category: Category;
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })

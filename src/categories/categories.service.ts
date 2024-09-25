@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './category.entity';
+import { Article } from 'src/articles/article.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from 'src/users/user.entity';
@@ -11,6 +12,8 @@ export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Article)
+    private readonly articleRepository: Repository<Article>,
   ) {}
 
   async create(
@@ -49,6 +52,17 @@ export class CategoriesService {
 
   async delete(id: string): Promise<void> {
     const category = await this.findOne(id);
+    await this.markArticlesAsDeleted(category.id);
     await this.categoryRepository.remove(category);
+  }
+
+  private async markArticlesAsDeleted(categoryId: string): Promise<void> {
+    // Soft delete des articles de cette catégorie (si ce n'est pas déjà fait)
+    await this.articleRepository
+      .createQueryBuilder()
+      .softDelete()
+      .from(Article)
+      .where('categoryId = :categoryId', { categoryId })
+      .execute();
   }
 }
