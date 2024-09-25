@@ -5,6 +5,11 @@ import { User, UserRole } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+// Créer un type pour exclure le mot de passe et ses méthodes associées
+type UserWithoutPassword = Omit<
+  User,
+  'password' | 'hashPassword' | 'validatePassword'
+>;
 @Injectable()
 export class UsersService {
   constructor(
@@ -36,16 +41,23 @@ export class UsersService {
     return this.userRepository.save(newUser);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(): Promise<UserWithoutPassword[]> {
+    const users = await this.userRepository.find();
+    // Exclure les mots de passe des utilisateurs avant de les retourner
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return users.map(({ password, ...result }) => result);
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<UserWithoutPassword> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return user;
+
+    // Exclude the password field from the response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
+    return result;
   }
 
   async update(
@@ -54,13 +66,24 @@ export class UsersService {
     user: User,
   ): Promise<User> {
     const existingUser = await this.findOne(id);
+
+    // Si le mot de passe n'est pas fourni, on garde l'ancien mot de passe
+    if (!updateUserDto.password) {
+      delete updateUserDto.password; // Supprimer le champ si vide pour ne pas le modifier
+    }
+
     Object.assign(existingUser, updateUserDto);
     existingUser.updatedBy = user.username; // Assurez-vous que 'updatedBy' est bien une propriété dans l'entité
     return this.userRepository.save(existingUser);
   }
 
   async delete(id: string): Promise<void> {
-    const user = await this.findOne(id);
+    // Utiliser la version complète de findOne pour obtenir l'utilisateur avec tous ses champs
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    // Supprimer l'utilisateur complet
     await this.userRepository.remove(user);
   }
 }
