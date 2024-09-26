@@ -8,6 +8,7 @@ import {
   MinLength,
   Matches,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { UserRole } from '../user.entity';
 
 export class CreateUserDto {
@@ -21,7 +22,8 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsDateString()
-  birthdate?: string; // Date de naissance, facultative
+  @Transform(({ value }) => (value === '' ? null : value)) // Conversion de la chaîne vide en null
+  birthdate?: string | null; // Date de naissance, facultative
 
   @IsNotEmpty()
   @IsEmail()
