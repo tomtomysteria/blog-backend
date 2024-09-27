@@ -10,6 +10,7 @@ type UserWithoutPassword = Omit<
   User,
   'password' | 'hashPassword' | 'validatePassword'
 >;
+
 @Injectable()
 export class UsersService {
   constructor(
