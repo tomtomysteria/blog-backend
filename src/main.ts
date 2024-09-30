@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 // import rateLimit from 'express-rate-limit';
@@ -30,6 +30,9 @@ async function bootstrap() {
   // );
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  // ClassSerializerInterceptor : Cet intercepteur transforme automatiquement les objets renvoyés en JSON, en respectant les règles définies par les décorateurs (@Exclude, @Expose, ...)
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const config = new DocumentBuilder()
     .setTitle('Blog API')

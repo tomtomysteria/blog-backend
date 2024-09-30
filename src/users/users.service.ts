@@ -44,9 +44,7 @@ export class UsersService {
 
   async findAll(): Promise<UserWithoutPassword[]> {
     const users = await this.userRepository.find();
-    // Exclure les mots de passe des utilisateurs avant de les retourner
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return users.map(({ password, ...result }) => result);
+    return users;
   }
 
   async findOne(id: string): Promise<UserWithoutPassword> {
@@ -55,10 +53,7 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    // Exclude the password field from the response
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
-    return result;
+    return user;
   }
 
   async update(

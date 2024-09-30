@@ -1,6 +1,7 @@
 import { Entity, Column, BeforeInsert } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { BaseEntity } from 'src/common/entities/base.entity';
+import { Exclude } from 'class-transformer';
 
 export enum UserRole {
   SUPER_ADMIN = 'super-admin',
@@ -32,7 +33,8 @@ export class User extends BaseEntity {
   @Column({ unique: true }) // Username unique
   username: string;
 
-  @Column()
+  @Column({ select: false }) // Ne jamais sélectionner le mot de passe dans les requêtes SQL
+  @Exclude() // Exclure le mot de passe lors de la transformation des objets en JSON
   password: string;
 
   @BeforeInsert()
