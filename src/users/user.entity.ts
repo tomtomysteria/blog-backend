@@ -33,7 +33,7 @@ export class User extends BaseEntity {
   @Column({ unique: true }) // Username unique
   username: string;
 
-  @Column({ select: false }) // Ne jamais sélectionner le mot de passe dans les requêtes SQL
+  @Column()
   @Exclude() // Exclure le mot de passe lors de la transformation des objets en JSON
   password: string;
 

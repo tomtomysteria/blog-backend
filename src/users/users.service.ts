@@ -29,8 +29,8 @@ export class UsersService {
       email,
       username,
       password,
-      role: role as UserRole, // Assurez-vous que le rôle est bien typé
-      createdBy: user.username, // Assurez-vous que 'createdBy' est bien une propriété dans l'entité
+      role: role as UserRole,
+      createdBy: user?.username,
     });
 
     return this.userRepository.save(newUser);
@@ -63,17 +63,15 @@ export class UsersService {
     }
 
     Object.assign(existingUser, updateUserDto);
-    existingUser.updatedBy = user.username; // Assurez-vous que 'updatedBy' est bien une propriété dans l'entité
+    existingUser.updatedBy = user.username;
     return this.userRepository.save(existingUser);
   }
 
   async delete(id: string): Promise<void> {
-    // Utiliser la version complète de findOne pour obtenir l'utilisateur avec tous ses champs
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    // Supprimer l'utilisateur complet
     await this.userRepository.remove(user);
   }
 }

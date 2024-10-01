@@ -24,8 +24,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN)
   create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
     const user = req.user as User;
     return this.usersService.create(createUserDto, user);
