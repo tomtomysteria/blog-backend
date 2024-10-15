@@ -5,4 +5,7 @@ import { BaseEntity } from 'src/common/entities/base.entity';
 export class Category extends BaseEntity {
   @Column()
   name: string;
+
+  @Column({ nullable: true })
+  description?: string;
 }
