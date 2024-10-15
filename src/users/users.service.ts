@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
@@ -7,6 +7,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -32,13 +34,17 @@ export class UsersService {
       role: role as UserRole,
       createdBy: user?.username,
     });
-
-    return this.userRepository.save(newUser);
+    const result = await this.userRepository.save(newUser);
+    this.logger.verbose(
+      `User ${result.username} created successfully by ${user.username}`,
+    );
+    return result;
   }
 
   async findAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
-    return users;
+    const results = await this.userRepository.find();
+    this.logger.verbose(`Found ${results.length} users`);
+    return results;
   }
 
   async findOne(id: string): Promise<User> {
@@ -64,7 +70,9 @@ export class UsersService {
 
     Object.assign(existingUser, updateUserDto);
     existingUser.updatedBy = user.username;
-    return this.userRepository.save(existingUser);
+    const updatedUser = await this.userRepository.save(existingUser);
+    this.logger.verbose(`User with ID: ${id} updated successfully`);
+    return updatedUser;
   }
 
   async delete(id: string): Promise<void> {
@@ -73,5 +81,6 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     await this.userRepository.remove(user);
+    this.logger.verbose(`User with ID: ${id} deleted successfully`);
   }
 }

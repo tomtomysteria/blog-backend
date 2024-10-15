@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Article } from './article.entity';
@@ -10,6 +10,8 @@ import { sanitizeContent } from 'src/utils/sanitize-content.util';
 
 @Injectable()
 export class ArticlesService {
+  private readonly logger = new Logger(ArticlesService.name);
+
   constructor(
     @InjectRepository(Article)
     private readonly articlesRepository: Repository<Article>,
@@ -53,16 +55,21 @@ export class ArticlesService {
       category,
       createdBy: user.username,
     });
-
-    return this.articlesRepository.save(article);
+    const result = await this.articlesRepository.save(article);
+    this.logger.verbose(
+      `Article ${result.title} created successfully by ${user.username}`,
+    );
+    return result;
   }
 
   // Fetch all articles with author and category relations, excluding soft-deleted ones
   async findAll(): Promise<Article[]> {
-    return this.articlesRepository.find({
+    const results = await this.articlesRepository.find({
       where: { deletedAt: null },
       relations: ['author', 'category'],
     });
+    this.logger.verbose(`Found ${results.length} articles`);
+    return results;
   }
 
   // Fetch a single article by ID with relations
@@ -130,7 +137,9 @@ export class ArticlesService {
     Object.assign(article, updateFields);
     article.updatedBy = user.username;
 
-    return this.articlesRepository.save(article);
+    const updatedArticle = await this.articlesRepository.save(article);
+    this.logger.verbose(`Article with ID: ${id} updated successfully`);
+    return updatedArticle;
   }
 
   // Soft delete an article by ID
@@ -140,5 +149,6 @@ export class ArticlesService {
       throw new NotFoundException('Article not found');
     }
     await this.articlesRepository.softRemove(article);
+    this.logger.verbose(`Article with ID: ${id} deleted successfully`);
   }
 }
