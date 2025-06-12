@@ -64,3 +64,7 @@ Cela affiche l'interface Swagger pour tester l'API REST.
 - `yarn lint` : Linter avec ESLint
 - `yarn format` : Formatage via Prettier
 - `yarn test:e2e` : Tests end-to-end
+
+## Documentation
+
+Pour plus de détails, consultez la [documentation](./DOCS.md).
